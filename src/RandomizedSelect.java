@@ -26,29 +26,9 @@ public class RandomizedSelect implements OrderStatistics {
 
     private int randomized_partition(int[] arr, int low, int high) {
         int i=rand.nextInt(low,high+1);
-        swap(arr,i,low);
-        return partition(arr,low,high);
+        Util.swap(arr,i,low);
+        return Util.partition(arr,low,high);
     }
 
-    private int partition(int[] arr, int low, int high) {
-        int pivot = arr[low];
-        int i = low;
-        for(int j=i+1;j<=high;j++)
-        {
-            if(arr[j] <= pivot)
-            {
-                i++;
-                swap(arr,i,j);
-            }
-        }
-        swap(arr,i,low);
-        return i;
-    }
 
-    private  void swap(int[] arr ,int i,int j)
-    {
-        int temp = arr[i];
-        arr[i] = arr[j];
-        arr[j] = temp;
-    }
 }
