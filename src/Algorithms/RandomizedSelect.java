@@ -1,3 +1,7 @@
+package Algorithms;
+
+import utils.Util;
+
 import java.util.Random;
 
 public class RandomizedSelect implements OrderStatistics {
@@ -14,24 +18,24 @@ public class RandomizedSelect implements OrderStatistics {
         if (low == high)
             return arr[low];
 
-        //partition around a random pivot and retun that pivot's index
-        int r = randomized_partition(arr,low,high);
+        //partition around a random pivot and return the lt and gt boundaries
+        int[] boundaries = randomized_partition(arr,low,high);
 
-        //get the rank of the pivot
-        int rank=r-low+1;
+        int lt=boundaries[0];
+        int gt=boundaries[1];
 
         //recurse
-        if (rank==i)
-            return arr[r];
-        else if (i<rank)
-            return rand_select(arr,low,r-1,i);
+        if (i>(lt-low) && i<=(gt-low+1))
+            return arr[lt];
+        else if (i<=(lt-low))
+            return rand_select(arr,low,lt-1,i);
         else
-            return rand_select(arr,r+1,high,i-rank);
+            return rand_select(arr,gt+1,high,i-(gt-low+1));
     }
 
 
 
-    private int randomized_partition(int[] arr, int low, int high) {
+    private int[] randomized_partition(int[] arr, int low, int high) {
 
         //choose an index between low and high inclusive
         int i=rand.nextInt(low,high+1);
@@ -39,8 +43,8 @@ public class RandomizedSelect implements OrderStatistics {
         //swap the selected pivot index with the firs element
         Util.swap(arr,i,low);
 
-        //return the index of that randomized pivot
-        return Util.partition(arr,low,high);
+        //return the boundaries of that randomized pivot
+        return Util.three_way_partition(arr,low,high);
     }
 
 

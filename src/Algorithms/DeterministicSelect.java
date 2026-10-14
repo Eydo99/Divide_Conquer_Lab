@@ -1,3 +1,7 @@
+package Algorithms;
+
+import utils.Util;
+
 import java.util.Arrays;
 
 import static java.lang.Math.min;
@@ -56,14 +60,19 @@ public class DeterministicSelect implements OrderStatistics {
         Util.swap(arr,low,pivot_index);
 
         //partition around our pivot
-        int r=Util.partition(arr,low,high);
+        int[] boundaries= Util.three_way_partition(arr,low,high);
 
-        //get the rank of the pivot
-        int rank=r-low+1;
+        //get the boundaries
+        int lt=boundaries[0];
+        int gt=boundaries[1];
 
         //recurse to get the rank
-        if (rank==i) return arr[r];
-        else if (i<rank) return select(arr,low,r-1,i);
-        else return select(arr,r+1,high,i-rank);
+        //recurse
+        if (i>(lt-low) && i<=(gt-low+1))
+            return arr[lt];
+        else if (i<=(lt-low))
+            return select(arr,low,lt-1,i);
+        else
+            return select(arr,gt+1,high,i-(gt-low+1));
     }
 }
