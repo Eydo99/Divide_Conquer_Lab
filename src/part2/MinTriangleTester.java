@@ -18,7 +18,6 @@ public class MinTriangleTester {
     static final long SEED = 2026L;
     static final Random gen = new Random(SEED);
     static final int MAX_PRINTED_FAILURES = 8;
-    static final MinTrianglePerimeter solver = new MinTrianglePerimeter();
 
     static int checks, failures;
 
@@ -225,7 +224,7 @@ public class MinTriangleTester {
 
     static double solve(int[][] pts) {
         double[][][] prepared = prepare(pts);
-        return solver.getMinTrianglePerimeter(prepared[0], prepared[1]);
+        return MinTrianglePerimeter.getMinTrianglePerimeter(prepared[0], prepared[1]);
     }
 
     /** Rows {x, y, xIndex}. arr_x sorted by x only; arr_y holds the same row objects sorted by y. */

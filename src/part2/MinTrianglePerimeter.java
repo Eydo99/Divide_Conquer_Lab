@@ -4,7 +4,9 @@ import java.util.ArrayList;
 
 public class MinTrianglePerimeter {
 
-    public double getMinTrianglePerimeter(double[][] arr_x,double[][] arr_y)
+    private MinTrianglePerimeter() {}
+
+    public static double getMinTrianglePerimeter(double[][] arr_x,double[][] arr_y)
     {
         //base case
         // 3 points:Brute force the perimeter
@@ -94,7 +96,7 @@ public class MinTrianglePerimeter {
 
     }
 
-    private double computePerimeter(double[][] arr)
+    private static double computePerimeter(double[][] arr)
     {
         //get all points
         double x1=arr[0][0];
