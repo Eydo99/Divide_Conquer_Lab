@@ -1,11 +1,13 @@
-import Algorithms.DeterministicSelect;
-import Algorithms.OrderStatistics;
-import Algorithms.RandomizedSelect;
+package Part1;
+
+import Part1.Algorithms.DeterministicSelect;
+import Part1.Algorithms.OrderStatistics;
+import Part1.Algorithms.RandomizedSelect;
 
 import java.util.*;
 
 /**
- * Tests Algorithms.OrderStatistics implementations against Arrays.sort.
+ * Tests Part1.Algorithms.OrderStatistics implementations against Arrays.sort.
  * Rank is 1-based: select(arr, 1) is the minimum.
  *
  * To add an algorithm, add one line in main().
@@ -28,7 +30,7 @@ public class SelectTester {
 
     static void runAll() {
         Map<String, OrderStatistics> algos = new LinkedHashMap<>();
-        algos.put("Algorithms.RandomizedSelect", new RandomizedSelect());
+        algos.put("Part1.Algorithms.RandomizedSelect", new RandomizedSelect());
         algos.put("MedianOfMedians", new DeterministicSelect());   // <-- rename to your class
         // algos.put("SortSelect", new SortSelect());
 

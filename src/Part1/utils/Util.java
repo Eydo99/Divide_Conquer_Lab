@@ -1,4 +1,4 @@
-package utils;
+package Part1.utils;
 
 public class Util {
 

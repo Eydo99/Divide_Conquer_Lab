@@ -1,8 +1,10 @@
-import Algorithms.DeterministicSelect;
-import Algorithms.OrderStatistics;
-import Algorithms.RandomizedSelect;
-import Algorithms.NaiveSelect;
-import utils.ArrayGenerator;
+package Part1;
+
+import Part1.Algorithms.DeterministicSelect;
+import Part1.Algorithms.OrderStatistics;
+import Part1.Algorithms.RandomizedSelect;
+import Part1.Algorithms.NaiveSelect;
+import Part1.utils.ArrayGenerator;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -22,7 +24,7 @@ public class MedianBenchmark {
     static volatile int sink;   // stops the JIT from discarding the results
 
     static int repsFor(int n) {
-        return Math.max(5, Math.min(100, 20_000_000 / n));
+        return Math.clamp(20_000_000 / n, 5, 100);
     }
 
     public static void main(String[] args) throws IOException {
