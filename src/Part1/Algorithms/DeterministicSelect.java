@@ -1,6 +1,6 @@
-package Algorithms;
+package Part1.Algorithms;
 
-import utils.Util;
+import Part1.utils.Util;
 
 import java.util.Arrays;
 

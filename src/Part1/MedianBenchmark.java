@@ -1,17 +1,21 @@
-import Algorithms.DeterministicSelect;
-import Algorithms.OrderStatistics;
-import Algorithms.RandomizedSelect;
-import Algorithms.NaiveSelect;
-import utils.ArrayGenerator;
+package Part1;
+
+import Part1.Algorithms.DeterministicSelect;
+import Part1.Algorithms.OrderStatistics;
+import Part1.Algorithms.RandomizedSelect;
+import Part1.Algorithms.NaiveSelect;
+import Part1.utils.ArrayGenerator;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.Arrays;
+import java.util.Scanner;
 
 public class MedianBenchmark {
 
-    static final int BOUND=1_000_000_000;
+    static final int DEFAULT_BOUND=1_000_000_000;
 
-    static final int[] SIZES={
+    static final int[] DEFAULT_SIZES={
             1_000, 2_000, 5_000,
             10_000, 20_000, 50_000,
             100_000, 200_000, 500_000,
@@ -22,10 +26,46 @@ public class MedianBenchmark {
     static volatile int sink;   // stops the JIT from discarding the results
 
     static int repsFor(int n) {
-        return Math.max(5, Math.min(100, 20_000_000 / n));
+        return Math.clamp(20_000_000 / n, 5, 100);
     }
 
     public static void main(String[] args) throws IOException {
+        Scanner in = new Scanner(System.in);
+        System.out.print("Enter the no of Arrays you want in benchmark (0 for default): ");
+        int size = in.nextInt();
+        while (size<0) {
+            System.out.println("number of arrays must be 0 for default or greater.");
+            System.out.print("Enter the no of Arrays you want in benchmark (0 for default): ");
+            size = in.nextInt();
+        }
+        int[] SIZES;
+        if (size==0) {
+            SIZES = DEFAULT_SIZES;
+        }
+        else {
+            SIZES=new int[size];
+            for(int i =0;i<size;i++) {
+                System.out.print("Enter the size of "+(i+1)+" array: ");
+                SIZES[i]=in.nextInt();
+                while(SIZES[i]<=0) {
+                    System.out.println("size must be greater than 0");
+                    System.out.print("Enter the size of"+(i+1)+"array: ");
+                    SIZES[i]=in.nextInt();
+                }
+            }
+            Arrays.sort(SIZES);
+        }
+        System.out.print("Enter bound (0 for default): ");
+        int BOUND = in.nextInt();
+        while(BOUND<0) {
+            System.out.println("bound must be greater than 0");
+            System.out.print("Enter bound (0 for default): ");
+            BOUND=in.nextInt();
+        }
+        if (BOUND==0) {
+            BOUND=DEFAULT_BOUND;
+        }
+
         String[] names = {"RandomizedSelect", "MedianOfMedians", "SortSelect"};
         OrderStatistics[] algos = {new RandomizedSelect(), new DeterministicSelect(), new NaiveSelect()};
 
@@ -82,7 +122,7 @@ public class MedianBenchmark {
             System.out.println();
         }
 
-        writeCsv("median_benchmark.csv", names, avgMs, repsUsed);
+        writeCsv("median_benchmark.csv", names, avgMs, repsUsed,SIZES);
         System.out.println("\nWrote median_benchmark.csv" + (mismatch ? "   (WARNING: mismatches were reported above)" : ""));
     }
 
@@ -91,13 +131,13 @@ public class MedianBenchmark {
         for (int n : warmSizes) {
             int rank = (n + 1) / 2;
             for (int rep = 0; rep < 30; rep++) {
-                int[] original = ArrayGenerator.generate(n, BOUND);
+                int[] original = ArrayGenerator.generate(n, DEFAULT_BOUND);
                 for (OrderStatistics a : algos) sink = a.select(original.clone(), rank);
             }
         }
     }
 
-    static void writeCsv(String file, String[] names, double[][] avgMs, int[] reps) throws IOException {
+    static void writeCsv(String file, String[] names, double[][] avgMs, int[] reps,int[] SIZES) throws IOException {
         try (PrintWriter out = new PrintWriter(file)) {
             out.print("n,reps");
             for (String name : names) out.print("," + name + "_ms");

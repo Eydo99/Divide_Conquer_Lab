@@ -1,6 +1,9 @@
-package utils;
+package Part1.utils;
 
 public class Util {
+
+    private Util()
+    {}
 
     //Method for partitioning while handling duplicates at the same time
     public static int[] three_way_partition(int[] arr, int low, int high) {
