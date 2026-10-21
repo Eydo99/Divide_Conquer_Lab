@@ -3,15 +3,10 @@ package part2;
 import java.util.*;
 
 /**
- * Tests MinTrianglePerimeter.getMinTrianglePerimeter(arr_x, arr_y) against:
+ * Tests MinTrianglePerimeter.minTrianglePerimeter(points) against:
  *   - the assignment's sample cases (checked as 3-decimal strings),
  *   - an O(n^3) brute force on small/medium inputs,
  *   - closed-form answers on large structured inputs (collinear lines, grids).
- *
- * prepare() builds the two arrays exactly the way the solver expects them:
- *   rows are {x, y, xIndex}; arr_x is sorted by x only (ties left arbitrary on purpose),
- *   xIndex is assigned right after that sort, and arr_y holds the SAME row objects sorted by y.
- * Your real main() must prepare its input the same way.
  */
 public class MinTriangleTester {
 
@@ -63,30 +58,20 @@ public class MinTriangleTester {
 
     static void handMade() {
         int[][][] cases = {
-                // the case where looking only at 3 consecutive candidates would miss the best triangle
                 {{-200, 50}, {-10, 1}, {-1, 0}, {1, 2}, {1, 3}, {200, 50}},
-                // vertical line, y order not the same as input order
                 {{5, 0}, {5, 9}, {5, 4}},
                 {{5, 9}, {5, 2}, {5, 4}},
                 {{5, 9}, {5, 2}, {5, 4}, {5, 100}, {5, -30}},
-                // horizontal line
                 {{9, 1}, {0, 1}, {4, 1}, {20, 1}},
-                // all x equal, many points
                 {{7, 1}, {7, 50}, {7, 3}, {7, 44}, {7, 6}, {7, 100}, {7, -8}, {7, 20}},
-                // all y equal, many points
                 {{1, 7}, {50, 7}, {3, 7}, {44, 7}, {6, 7}, {100, 7}, {-8, 7}, {20, 7}},
-                // 2x2 and 3x3 grids
                 {{0, 0}, {0, 1}, {1, 0}, {1, 1}},
                 {{0, 0}, {0, 1}, {0, 2}, {1, 0}, {1, 1}, {1, 2}, {2, 0}, {2, 1}, {2, 2}},
-                // extreme coordinates
                 {{-1000000, -1000000}, {1000000, 1000000}, {-1000000, 1000000}, {1000000, -1000000}},
                 {{-1000000, -1000000}, {1000000, 1000000}, {0, 0}},
-                // four points: both halves are too small to hold a triangle (the 2 + 2 split)
                 {{0, 0}, {1, 5}, {2, 1}, {3, 4}},
                 {{0, 0}, {0, 1}, {1, 0}, {1, 1}},
-                // two tight clusters far apart
                 {{0, 0}, {1, 0}, {0, 1}, {1000, 1000}, {1001, 1000}, {1000, 1001}},
-                // negatives and a long thin shape
                 {{-5, -5}, {-4, 3}, {2, -7}, {9, 9}, {-9, 9}, {0, 0}},
         };
         for (int[][] c : cases)
@@ -94,7 +79,6 @@ public class MinTriangleTester {
     }
 
     static void tinySizes() {
-        // n = 4 is the only size where both halves return "no triangle", so test it heavily.
         for (int n = 3; n <= 8; n++)
             for (int rep = 0; rep < 2000; rep++)
                 checkAgainstBrute("tiny n=" + n, randomPoints(n, -20, 20, -20, 20));
@@ -111,18 +95,14 @@ public class MinTriangleTester {
     static void repeatedCoordinates() {
         for (int n = 3; n <= 60; n++)
             for (int rep = 0; rep < 40; rep++) {
-                // few distinct x values, wide y: many points share a median x
                 checkAgainstBrute("few x n=" + n, randomPoints(n, 0, 2, -1_000_000, 1_000_000));
                 checkAgainstBrute("few x n=" + n, randomPoints(n, 0, 4, -30, 30));
-                // few distinct y values, wide x
                 checkAgainstBrute("few y n=" + n, randomPoints(n, -1_000_000, 1_000_000, 0, 2));
                 checkAgainstBrute("few y n=" + n, randomPoints(n, -30, 30, 0, 4));
             }
     }
 
     static void crossingOptimum() {
-        // Far-away points spread to both sides, plus a tight triangle around x = 0,
-        // so the dividing line cuts through the best triangle.
         for (int n = 7; n <= 200; n += 3)
             for (int rep = 0; rep < 15; rep++) {
                 int far = n - 3;
@@ -151,7 +131,6 @@ public class MinTriangleTester {
 
     static void largeCollinear() {
         int n = 100_000;
-        // Closed form: on a line, best = 2 * (smallest span of three consecutive points).
         int[] coords = distinctSorted(n, 10);
         long minSpan = Long.MAX_VALUE;
         for (int i = 0; i + 2 < n; i++) minSpan = Math.min(minSpan, (long) coords[i + 2] - coords[i]);
@@ -168,14 +147,12 @@ public class MinTriangleTester {
     }
 
     static void largeGrid() {
-        // 300 x 300 grid: every x and every y value repeats 300 times.
-        // The best triangle is a unit right triangle: 1 + 1 + sqrt(2).
         int side = 300;
         int[][] pts = new int[side * side][];
         int k = 0;
         for (int x = 0; x < side; x++)
             for (int y = 0; y < side; y++)
-                pts[k++] = new int[]{x * 3 - 400, y * 3 - 400};   // spacing 3 -> expected 3 * (2 + sqrt 2)
+                pts[k++] = new int[]{x * 3 - 400, y * 3 - 400};
         checkValue("large grid", shuffled(pts), 3 * (2 + Math.sqrt(2)));
     }
 
@@ -190,8 +167,6 @@ public class MinTriangleTester {
             report("large random", pts, "threw " + t);
             return;
         }
-        // No brute force is possible here. A sampled minimum is only an UPPER bound on the answer,
-        // so this catches a result that is too big (a missed triangle) but not one that is too small.
         double sampled = Double.POSITIVE_INFINITY;
         for (int s = 0; s < 3_000_000; s++) {
             int a = gen.nextInt(n), b = gen.nextInt(n), c = gen.nextInt(n);
@@ -223,20 +198,13 @@ public class MinTriangleTester {
     }
 
     static double solve(int[][] pts) {
-        double[][][] prepared = prepare(pts);
-        return MinTrianglePerimeter.getMinTrianglePerimeter(prepared[0], prepared[1]);
-    }
-
-    /** Rows {x, y, xIndex}. arr_x sorted by x only; arr_y holds the same row objects sorted by y. */
-    static double[][][] prepare(int[][] pts) {
         int n = pts.length;
-        double[][] arrX = new double[n][];
-        for (int i = 0; i < n; i++) arrX[i] = new double[]{pts[i][0], pts[i][1], 0};
-        Arrays.sort(arrX, (a, b) -> Double.compare(a[0], b[0]));
-        for (int i = 0; i < n; i++) arrX[i][2] = i;
-        double[][] arrY = arrX.clone();                    // shallow: same row objects
-        Arrays.sort(arrY, (a, b) -> Double.compare(a[1], b[1]));
-        return new double[][][]{arrX, arrY};
+        double[][] points = new double[n][3];
+        for (int i = 0; i < n; i++) {
+            points[i][0] = pts[i][0];
+            points[i][1] = pts[i][1];
+        }
+        return MinTrianglePerimeter.minTrianglePerimeter(points);
     }
 
     static double brute(int[][] p) {
@@ -259,7 +227,7 @@ public class MinTriangleTester {
     }
 
     static String fmt(double v) {
-        return String.format(Locale.US, "%.3f", v);   // Locale.US: avoids a decimal comma on some systems
+        return String.format(Locale.US, "%.3f", v);
     }
 
     static void report(String label, int[][] pts, String msg) {
@@ -284,7 +252,6 @@ public class MinTriangleTester {
         return (long) (x + 1_000_000) * 2_000_001L + (y + 1_000_000);
     }
 
-    /** n distinct points with coordinates inside the given inclusive ranges (n is capped if the box is too small). */
     static int[][] randomPoints(int n, int xLo, int xHi, int yLo, int yHi) {
         long cells = (long) (xHi - xLo + 1) * (yHi - yLo + 1);
         n = (int) Math.min(n, cells);
@@ -308,7 +275,6 @@ public class MinTriangleTester {
         return p;
     }
 
-    /** n strictly increasing coordinates with random gaps in [1, maxGap]. */
     static int[] distinctSorted(int n, int maxGap) {
         int[] c = new int[n];
         int v = -500_000;
