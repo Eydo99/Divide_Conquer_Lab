@@ -1,12 +1,34 @@
 package part2;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
 
 public class MinTrianglePerimeter {
 
     private MinTrianglePerimeter() {}
 
-    public static double getMinTrianglePerimeter(double[][] arr_x,double[][] arr_y)
+    public static double minTrianglePerimeter(double[][] points) {
+
+        //Presorting
+        //sort the points by X-Coordinate and then append the global index of X's for y sorting
+        Arrays.sort(points, Comparator.comparingDouble(point->point[0]));
+        for(int i=0;i<points.length;i++)
+            points[i][2]=i;
+
+        //arr_x is done
+        double[][] arr_x=Arrays.copyOf(points,points.length);
+
+        //then sort the points by y-coordinate
+        Arrays.sort(points,Comparator.comparingDouble(point->point[1]));
+
+        //arr_y is done
+        double[][] arr_y=Arrays.copyOf(points,points.length);
+
+        return getMinTrianglePerimeter(arr_x, arr_y);
+    }
+
+    private static double getMinTrianglePerimeter(double[][] arr_x,double[][] arr_y)
     {
         //base case
         // 3 points:Brute force the perimeter

@@ -2,21 +2,15 @@ package part2;
 
 import java.io.*;
 import java.util.Arrays;
-import java.util.Comparator;
+
 import java.util.Locale;
 
 public class Main {
 
     public static void main(String[] args) throws FileNotFoundException
     {
-        //hardcoded input file and output file for now
-        String filePath = "C:\\Users\\eyada\\OneDrive\\Desktop\\Divide and Conquer Lab\\Divide And Conquer Lab\\src\\part2\\test";
-        String answer="answer.txt";
 
-
-        try(BufferedReader reader = new BufferedReader(new FileReader(filePath));
-            BufferedWriter writer = new BufferedWriter(new FileWriter(answer));
-            )
+        try(BufferedReader reader = new BufferedReader(new InputStreamReader(System.in)))
         {
             String line;
 
@@ -40,28 +34,13 @@ public class Main {
                     points[i][1]=Double.parseDouble(point[1]);
                 }
 
-                //Presorting
-                //sort the points by X-Coordinate and then append the global index of X's for y sorting
-                Arrays.sort(points,Comparator.comparingDouble(point->point[0]));
-                for(int i=0;i<points.length;i++)
-                    points[i][2]=i;
-
-                //arr_x is done
-                double[][] arr_x=Arrays.copyOf(points,points.length);
-
-                //then sort the points by y-coordinate
-                Arrays.sort(points,Comparator.comparingDouble(point->point[1]));
-
-                //arr_y is done
-                double[][] arr_y=Arrays.copyOf(points,points.length);
 
                 //get the minPerimeter of triangle formed by these points
-                double minPerimeter=MinTrianglePerimeter.getMinTrianglePerimeter(arr_x, arr_y);
+                double minPerimeter=MinTrianglePerimeter.minTrianglePerimeter(points);
 
                 //write the result of each test case to the output file
                 String s=String.format(Locale.US,"%.3f",minPerimeter);
-                writer.write(s + "\n");
-
+                System.out.println(s);
             }
 
         } catch (FileNotFoundException e) {

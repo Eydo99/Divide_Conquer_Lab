@@ -1,0 +1,24 @@
+name: Check my submission
+
+# Manual trigger: Actions tab -> "Check my submission" -> Run workflow -> enter the path of your jar
+on:
+  workflow_dispatch:
+    inputs:
+      jar_path:
+        description: 'Path of your jar, e.g. submissions/20240001.jar (leave empty if submissions/ holds exactly one jar)'
+        required: false
+        default: ''
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: Karim19Alaa/csed-cse321-submission-checker@v1
+        with:
+          assignment: triangle          # which assignment this repo is for
+          jar-path: ${{ inputs.jar_path }}
