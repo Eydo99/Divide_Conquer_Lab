@@ -3,15 +3,14 @@ package Part1;
 import Part1.Algorithms.DeterministicSelect;
 import Part1.Algorithms.OrderStatistics;
 import Part1.Algorithms.RandomizedSelect;
+import Part1.Algorithms.NaiveSelect;
+import Part1.utils.ArrayGenerator; // Imported ArrayGenerator
 
 import java.util.*;
 
 /**
  * Tests Part1.Algorithms.OrderStatistics implementations against Arrays.sort.
  * Rank is 1-based: select(arr, 1) is the minimum.
- *
- * To add an algorithm, add one line in main().
- * Each call receives a fresh clone, so mutation never leaks between checks.
  */
 public class SelectTester {
 
@@ -22,7 +21,6 @@ public class SelectTester {
     static int checks, failures;
 
     public static void main(String[] args) throws Exception {
-        // The big stack lets deep recursion (many duplicates) run instead of crashing early.
         Thread t = new Thread(null, SelectTester::runAll, "tester", 1L << 29);
         t.start();
         t.join();
@@ -31,10 +29,10 @@ public class SelectTester {
     static void runAll() {
         Map<String, OrderStatistics> algos = new LinkedHashMap<>();
         algos.put("Part1.Algorithms.RandomizedSelect", new RandomizedSelect());
-        algos.put("MedianOfMedians", new DeterministicSelect());   // <-- rename to your class
-        // algos.put("SortSelect", new SortSelect());
+        algos.put("MedianOfMedians", new DeterministicSelect());
+        algos.put("Part1.Algorithms.NaiveSelect", new NaiveSelect());
 
-        System.out.println("Seed = " + SEED);
+        System.out.println("Seed = " + SEED + " (Note: ArrayGenerator uses unseeded Random)");
         for (Map.Entry<String, OrderStatistics> e : algos.entrySet()) {
             System.out.println("\n==================== " + e.getKey() + " ====================");
             checks = 0;
@@ -59,30 +57,20 @@ public class SelectTester {
 
     static void fixedCases(OrderStatistics a) {
         int[][] cases = {
-                {7},
-                {2, 1},
-                {1, 4, 2, 5, 3},
-                {1, 4, 2, 5, 3, 0},
-                {9, 8, 7, 6, 5, 4},
-                {10, 9, 8, 7, 6, 5, 4, 3, 2, 1},
-                seq(1, 11, false),
-                seq(1, 12, true),
-                {-5, 3, -1, 0, 8, -9, 2},
-                {3, 1, 3, 2, 3, 3, 1, 2},
+                {7}, {2, 1}, {1, 4, 2, 5, 3}, {1, 4, 2, 5, 3, 0},
+                {9, 8, 7, 6, 5, 4}, {10, 9, 8, 7, 6, 5, 4, 3, 2, 1},
+                seq(1, 11, false), seq(1, 12, true),
+                {-5, 3, -1, 0, 8, -9, 2}, {3, 1, 3, 2, 3, 3, 1, 2},
                 {4, 2, 9, 1, 7, 3, 8, 6, 5, 10, 12, 11},
-                fill(12, 5),
-                fill(5, 0),
-                {0, 0, 0, 0, 1},
-                {1, 0, 0, 0, 0},
+                fill(12, 5), fill(5, 0),
+                {0, 0, 0, 0, 1}, {1, 0, 0, 0, 0},
         };
         for (int[] c : cases) {
-            // Repeat: randomized algorithms can fail on only some runs of the same input.
             for (int rep = 0; rep < 20; rep++) checkAllRanks(a, c, "fixed");
         }
     }
 
     static void medianConvention(OrderStatistics a) {
-        // Lower median: rank = ceil(n/2) = (n+1)/2, which equals sorted[(n+1)/2 - 1].
         for (int n = 1; n <= 12; n++) {
             for (int rep = 0; rep < 50; rep++) {
                 int[] arr = randomArray(n, 1000);
@@ -131,18 +119,15 @@ public class SelectTester {
     }
 
     static void duplicateStress(OrderStatistics a) {
-        // All equal and tiny value ranges: this is where a partition that lumps
-        // equal elements on one side degrades. Watch the time printed for this section.
-        int[] sizes = {100,500, 20_000};
+        int[] sizes = {100, 500, 20_000};
         for (int n : sizes) {
             checkSampleRanks(a, fill(n, 5), "all equal n=" + n);
-            checkSampleRanks(a, randomArray(n, 2), "2 distinct values n=" + n);
-            checkSampleRanks(a, randomArray(n, 5), "5 distinct values n=" + n);
+            checkSampleRanks(a, randomArray(n, 2), "few distinct values n=" + n);
+            checkSampleRanks(a, randomArray(n, 5), "more distinct values n=" + n);
         }
     }
 
     static void extremeValues(OrderStatistics a) {
-        // Catches overflow if anywhere you compute a - b, or a + b, on the values.
         int[] arr = new int[60];
         for (int i = 0; i < arr.length; i++) {
             int pick = gen.nextInt(3);
@@ -172,7 +157,7 @@ public class SelectTester {
         int expected = sorted[rank - 1];
         int got;
         try {
-            got = a.select(original.clone(), rank);   // fresh copy every call
+            got = a.select(original.clone(), rank);
         } catch (Throwable t) {
             report(label, original, rank, "threw " + t);
             return;
@@ -199,9 +184,12 @@ public class SelectTester {
     // ------------------------------------------------------------------ generators
 
     static int[] randomArray(int n, int range) {
-        int[] a = new int[n];
-        for (int i = 0; i < n; i++) a[i] = range == Integer.MAX_VALUE ? gen.nextInt() : gen.nextInt(range);
-        return a;
+        // Prevent overflow in ArrayGenerator's rand.nextInt(-bound, bound+1) when range is MAX_VALUE[cite: 5]
+        if (range == Integer.MAX_VALUE) {
+            return ArrayGenerator.generate(n, Integer.MAX_VALUE - 1);
+        }
+        // Use the existing ArrayGenerator[cite: 5]
+        return ArrayGenerator.generate(n, range);
     }
 
     static int[] shuffled(int n) {
